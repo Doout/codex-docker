@@ -1,0 +1,25 @@
+name: codex-docker
+
+services:
+  workspace:
+    build:
+      context: .
+    image: doout/codex-docker:latest
+    container_name: codex-docker
+    working_dir: /workspace
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+    environment:
+      CODEX_HOME: /root/.codex
+      TERM: xterm-256color
+    volumes:
+      - workspace-data:/workspace
+      - codex-home:/root/.codex
+      - cache-data:/root/.cache
+    command: sleep infinity
+
+volumes:
+  workspace-data:
+  codex-home:
+  cache-data:

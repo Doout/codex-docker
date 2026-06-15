@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: codex-docker
+  namespace: codex-docker
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: codex-docker
+  template:
+    metadata:
+      labels:
+        app: codex-docker
+    spec:
+      containers:
+        - name: workspace
+          image: doout/codex-docker:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - sleep
+            - infinity
+          workingDir: /workspace
+          stdin: true
+          tty: true
+          env:
+            - name: CODEX_HOME
+              value: /root/.codex
+            - name: TERM
+              value: xterm-256color
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+            allowPrivilegeEscalation: true
+          volumeMounts:
+            - name: workspace-data
+              mountPath: /workspace
+            - name: codex-home
+              mountPath: /root/.codex
+            - name: cache-data
+              mountPath: /root/.cache
+      volumes:
+        - name: workspace-data
+          persistentVolumeClaim:
+            claimName: codex-workspace
+        - name: codex-home
+          persistentVolumeClaim:
+            claimName: codex-home
+        - name: cache-data
+          persistentVolumeClaim:
+            claimName: codex-cache
