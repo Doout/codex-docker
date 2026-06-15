@@ -10,6 +10,7 @@ COPY docker/apt-packages.txt /tmp/apt-packages.txt
 RUN apt-get update \
     && grep -Ev '^[[:space:]]*(#|$)' /tmp/apt-packages.txt \
         | xargs -r apt-get install -y --no-install-recommends \
+    && rm -f /etc/ssh/ssh_host_* \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/codex-bin /opt/codex-home /root/.codex /workspace /root/.cache \
@@ -18,12 +19,16 @@ RUN mkdir -p /opt/codex-bin /opt/codex-home /root/.codex /workspace /root/.cache
     && /opt/codex-bin/codex --version
 
 COPY docker/codex-wrapper.sh /usr/local/bin/codex
+COPY docker/sshd_config /etc/ssh/sshd_config.d/99-container.conf
 COPY docker/entrypoint.sh /usr/local/bin/container-entrypoint
-RUN chmod +x /usr/local/bin/codex /usr/local/bin/container-entrypoint
+RUN chmod 0644 /etc/ssh/sshd_config.d/99-container.conf \
+    && chmod +x /usr/local/bin/codex /usr/local/bin/container-entrypoint
 
 WORKDIR /workspace
 
 VOLUME ["/workspace", "/root/.codex", "/root/.cache"]
+
+EXPOSE 22
 
 ENTRYPOINT ["container-entrypoint"]
 CMD ["codex"]

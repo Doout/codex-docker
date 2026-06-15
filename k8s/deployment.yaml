@@ -25,10 +25,22 @@ spec:
           workingDir: /workspace
           stdin: true
           tty: true
+          ports:
+            - name: ssh
+              containerPort: 22
+              protocol: TCP
           env:
             - name: CODEX_HOME
               value: /root/.codex
             - name: INSTALL_WORKSPACE_APT
+              value: "1"
+            - name: SSH_AUTHORIZED_KEYS
+              valueFrom:
+                secretKeyRef:
+                  name: codex-ssh-authorized-keys
+                  key: authorized_keys
+                  optional: true
+            - name: START_SSHD
               value: "1"
             - name: TERM
               value: xterm-256color

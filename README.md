@@ -12,6 +12,92 @@ Docker Compose uses named volumes:
 
 Those volumes survive container restarts and recreates. Kubernetes uses matching PVCs under `k8s/`.
 
+## SSH Access
+
+The image installs and starts OpenSSH server by default. SSH host keys and `authorized_keys` live under the persistent `codex-home` volume or PVC:
+
+```text
+/root/.codex/ssh/
+```
+
+Password login is disabled. Root key login is enabled because the container is intentionally root-based for tool installation.
+
+### Docker Compose SSH
+
+Start the container:
+
+```bash
+make up
+```
+
+Add your public key to the persistent auth file:
+
+```bash
+docker compose exec -T workspace sh -c 'mkdir -p /root/.codex/ssh && cat > /root/.codex/ssh/authorized_keys && chmod 600 /root/.codex/ssh/authorized_keys' < ~/.ssh/id_ed25519.pub
+```
+
+Connect:
+
+```bash
+make ssh
+```
+
+Compose publishes SSH on `127.0.0.1:2222` by default. To publish differently:
+
+```bash
+SSH_BIND_ADDRESS=0.0.0.0 SSH_PORT=2222 docker compose up -d
+```
+
+Only bind publicly on a network you trust and only with key-based access.
+
+### Kubernetes SSH
+
+Apply the manifests:
+
+```bash
+make k8s-apply
+```
+
+Add your public key to the persistent auth file:
+
+```bash
+kubectl -n codex-docker exec -i deploy/codex-docker -- sh -c 'mkdir -p /root/.codex/ssh && cat > /root/.codex/ssh/authorized_keys && chmod 600 /root/.codex/ssh/authorized_keys' < ~/.ssh/id_ed25519.pub
+```
+
+For local testing, forward the Service:
+
+```bash
+make k8s-port-forward
+```
+
+Then connect from another terminal:
+
+```bash
+SSH_PORT=2222 make ssh
+```
+
+The Kubernetes Service is `ClusterIP` by default. For a reachable always-on host, expose `codex-docker-ssh` through your cluster's preferred private path, such as a VPN, mesh network, internal load balancer, or a patched Service type.
+
+### SSH Config For Remote Projects
+
+Add a concrete host alias to the machine running the Codex App:
+
+```sshconfig
+Host codex-docker
+  HostName localhost
+  Port 2222
+  User root
+  IdentityFile ~/.ssh/id_ed25519
+```
+
+Confirm SSH works before adding the host in the app:
+
+```bash
+ssh codex-docker
+```
+
+The app discovers concrete aliases from `~/.ssh/config`, uses OpenSSH to resolve them, and starts the remote app server through SSH using the remote login shell. The `codex` wrapper is installed on `PATH` as `/usr/local/bin/codex`.
+
 ## Included Tools
 
 The image installs a small base developer toolchain from `docker/apt-packages.txt`, including Git, GitHub CLI, curl, jq, ripgrep, build tools, Python, Node.js, npm, editors, SSH client, zip/unzip, and shell utilities.

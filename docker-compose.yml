@@ -13,7 +13,11 @@ services:
     environment:
       CODEX_HOME: /root/.codex
       INSTALL_WORKSPACE_APT: "1"
+      SSH_AUTHORIZED_KEYS: ${SSH_AUTHORIZED_KEYS:-}
+      START_SSHD: "1"
       TERM: xterm-256color
+    ports:
+      - "${SSH_BIND_ADDRESS:-127.0.0.1}:${SSH_PORT:-2222}:22"
     volumes:
       - workspace-data:/workspace
       - codex-home:/root/.codex

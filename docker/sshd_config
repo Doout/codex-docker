@@ -1,0 +1,14 @@
+Port 22
+ListenAddress 0.0.0.0
+
+PermitRootLogin prohibit-password
+PasswordAuthentication no
+KbdInteractiveAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile /root/.codex/ssh/authorized_keys .ssh/authorized_keys
+
+AllowTcpForwarding yes
+X11Forwarding no
+PermitTunnel no
+UsePAM no
+PrintMotd no

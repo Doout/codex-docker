@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: codex-docker-ssh
+  namespace: codex-docker
+spec:
+  type: ClusterIP
+  selector:
+    app: codex-docker
+  ports:
+    - name: ssh
+      port: 22
+      targetPort: ssh
+      protocol: TCP
