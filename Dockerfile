@@ -5,33 +5,11 @@ ENV DEBIAN_FRONTEND=noninteractive \
     TERM=xterm-256color \
     PATH=/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin
 
+COPY docker/apt-packages.txt /tmp/apt-packages.txt
+
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        bash \
-        bash-completion \
-        bubblewrap \
-        build-essential \
-        ca-certificates \
-        curl \
-        fd-find \
-        git \
-        gh \
-        jq \
-        less \
-        nano \
-        nodejs \
-        npm \
-        openssh-client \
-        procps \
-        python3 \
-        python3-dev \
-        python3-pip \
-        python3-venv \
-        ripgrep \
-        sudo \
-        unzip \
-        vim-tiny \
-        zip \
+    && grep -Ev '^[[:space:]]*(#|$)' /tmp/apt-packages.txt \
+        | xargs -r apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p /opt/codex-home /root/.codex /workspace /root/.cache \

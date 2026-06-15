@@ -12,6 +12,47 @@ Docker Compose uses named volumes:
 
 Those volumes survive container restarts and recreates. Kubernetes uses matching PVCs under `k8s/`.
 
+## Included Tools
+
+The image installs a small base developer toolchain from `docker/apt-packages.txt`, including Git, GitHub CLI, curl, jq, ripgrep, build tools, Python, Node.js, npm, editors, SSH client, zip/unzip, and shell utilities.
+
+The container runs as `root`, so tools can also be installed interactively:
+
+```bash
+apt-get update
+apt-get install -y htop make
+```
+
+Interactive system package installs survive a normal container restart, but they do not survive a Compose recreate or Kubernetes pod replacement. For durable tools, use one of these two paths.
+
+### Bake Tools Into The Image
+
+Add package names to `docker/apt-packages.txt`, rebuild, and redeploy:
+
+```bash
+make build
+```
+
+For Kubernetes, push the rebuilt image and update `k8s/deployment.yaml` if the tag changed.
+
+### Reinstall Tools From Persistent Storage
+
+Compose and Kubernetes set `INSTALL_WORKSPACE_APT=1`. On startup, the entrypoint checks this file inside the persistent workspace:
+
+```text
+/workspace/.container/apt-packages.txt
+```
+
+Add one apt package name per line. Missing packages are installed automatically when the container or pod starts:
+
+```text
+htop
+tree
+postgresql-client
+```
+
+This keeps the package intent in persistent storage even though the installed system packages live in the container filesystem.
+
 ## Quick Start
 
 Build the image:

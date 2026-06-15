@@ -12,6 +12,7 @@ services:
     restart: unless-stopped
     environment:
       CODEX_HOME: /root/.codex
+      INSTALL_WORKSPACE_APT: "1"
       TERM: xterm-256color
     volumes:
       - workspace-data:/workspace
