@@ -53,6 +53,24 @@ postgresql-client
 
 This keeps the package intent in persistent storage even though the installed system packages live in the container filesystem.
 
+## Updating The CLI
+
+The image contains a baked runtime under `/opt/codex-home`. On first startup, the entrypoint seeds that runtime into the persistent `codex-home` volume or PVC at `/root/.codex`. After that, the `codex` command runs from persistent storage.
+
+Update a running Compose container without recreating it:
+
+```bash
+make update
+```
+
+Update a running Kubernetes pod without restarting it:
+
+```bash
+make k8s-update
+```
+
+Because the standalone package store lives under `/root/.codex/packages/standalone`, updates made this way survive container recreates and pod replacements as long as the `codex-home` volume or PVC is retained.
+
 ## Quick Start
 
 Build the image:
@@ -146,5 +164,5 @@ Update `k8s/deployment.yaml` if you publish the image under a different registry
 ## Notes
 
 - The container runs as `root` so it can install system packages during a session.
-- The image installs the CLI runtime under `/opt/codex-home`; runtime state is kept separately under the mounted `/root/.codex`.
+- The image seeds the CLI runtime from `/opt/codex-home` into the mounted `/root/.codex` volume or PVC, so runtime updates can persist.
 - The Dockerfile uses the documented standalone installer from `https://chatgpt.com/codex/install.sh`.

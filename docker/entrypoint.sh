@@ -1,6 +1,25 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+seed_runtime() {
+  local state_home="${CODEX_HOME:-/root/.codex}"
+  local state_runtime="${state_home}/packages/standalone"
+  local seed_runtime="/opt/codex-home/packages/standalone"
+
+  if [[ -x "${state_runtime}/current/bin/codex" || -x "${state_runtime}/current/codex" ]]; then
+    return
+  fi
+
+  if [[ ! -d "${seed_runtime}" ]]; then
+    return
+  fi
+
+  echo "Seeding CLI runtime into persistent CODEX_HOME"
+  mkdir -p "${state_home}/packages"
+  rm -rf "${state_runtime}"
+  cp -a "${seed_runtime}" "${state_runtime}"
+}
+
 install_workspace_apt_packages() {
   local package_file="${WORKSPACE_APT_PACKAGES:-/workspace/.container/apt-packages.txt}"
 
@@ -37,6 +56,7 @@ install_workspace_apt_packages() {
 
 mkdir -p "${CODEX_HOME:-/root/.codex}" /workspace /root/.cache
 
+seed_runtime
 install_workspace_apt_packages
 
 exec "$@"

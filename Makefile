@@ -1,4 +1,4 @@
-.PHONY: build up run shell doctor down logs volumes k8s-apply k8s-delete
+.PHONY: build up run shell doctor update down logs volumes k8s-apply k8s-delete k8s-update
 
 build:
 	docker compose build
@@ -15,6 +15,9 @@ shell: up
 doctor:
 	docker compose run --rm workspace codex doctor
 
+update:
+	docker compose exec workspace codex update
+
 down:
 	docker compose down
 
@@ -29,3 +32,6 @@ k8s-apply:
 
 k8s-delete:
 	kubectl delete -k k8s
+
+k8s-update:
+	kubectl -n codex-docker exec deploy/codex-docker -- codex update

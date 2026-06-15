@@ -12,13 +12,14 @@ RUN apt-get update \
         | xargs -r apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir -p /opt/codex-home /root/.codex /workspace /root/.cache \
+RUN mkdir -p /opt/codex-bin /opt/codex-home /root/.codex /workspace /root/.cache \
     && curl -fsSL https://chatgpt.com/codex/install.sh \
-        | CODEX_NON_INTERACTIVE=1 CODEX_HOME=/opt/codex-home CODEX_INSTALL_DIR=/usr/local/bin sh \
-    && codex --version
+        | CODEX_NON_INTERACTIVE=1 CODEX_HOME=/opt/codex-home CODEX_INSTALL_DIR=/opt/codex-bin sh \
+    && /opt/codex-bin/codex --version
 
+COPY docker/codex-wrapper.sh /usr/local/bin/codex
 COPY docker/entrypoint.sh /usr/local/bin/container-entrypoint
-RUN chmod +x /usr/local/bin/container-entrypoint
+RUN chmod +x /usr/local/bin/codex /usr/local/bin/container-entrypoint
 
 WORKDIR /workspace
 
